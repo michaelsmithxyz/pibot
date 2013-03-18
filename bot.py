@@ -62,7 +62,7 @@ class Bot:
         self.mqueue.append(message)
 
     def main(self):
-        self.plugin_manager.load("plugins/")
+        self.plugin_manager.load("modules/")
         self.sock.connect((self.server, self.port)) 
         self.poller.add_read(self.sock, self.read_socket)
         self.poller.add_write(self.sock, self.first_write)
