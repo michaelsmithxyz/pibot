@@ -6,25 +6,19 @@ import sys
 import bot
 
 def usage():
-    print("main.py -s [server] -p [port] -n [nick]")
+    print("main.py -c [config file]")
 
 def main(argv):
-    server = 'irc.freenode.net'
-    port = 6667
-    nick = 's0lderbot'
+    conf = 'bot.conf'
     try:
-        opts, args = getopt.getopt(argv, 's:n:p:')
+        opts, args = getopt.getopt(argv, 'c:')
     except:
         usage()
         return 1
     for o, a in opts:
-        if o == '-s':
-            server = a
-        elif o == '-p':
-            port = int(a)
-        elif o == '-n':
-            nick = a
-    ircbot = bot.Bot(server, port, nick, opts)
+        if o == '-c':
+            conf = a
+    ircbot = bot.Bot(conf, opts)
     ircbot.main()
     return 0
 

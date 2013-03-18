@@ -1,22 +1,28 @@
 #!/usr/bin/env python
 
-class LoggingPlugin:
-    def __init__(self, bot, irc, l, events, args, mgr):
-        self.irc = irc
-        self.mgr = mgr
+import events
+import irc
+import logging as l
+
+NAME = 'mod_logging'
+
+class LoggingModule:
+    def __init__(self, bot):
         self.bot = bot
-        self.events = events
-        self.l = l
+        self.mgr = self.bot.get_plugin_manager()
+        self.conf = self.bot.get_config()
     
     def init(self):
-        self.mgr.add_handler(self.events.READ_MESSAGE, self.log)
-        self.mgr.add_handler(self.events.WRITE_MESSAGE, self.log)
+        if self.conf.get_value("bot.logconsole").lower() == 'true':
+            l.info("Logging enabled")
+            self.mgr.add_handler(events.READ_MESSAGE, self.log)
+            self.mgr.add_handler(events.WRITE_MESSAGE, self.log)
 
     def log(self, event, args):
         msg = args[0]
-        self.l.info(msg.rstrip())
+        l.info(msg.rstrip())
 
-def init(bundle):
-    pl = LoggingPlugin(bundle[0], bundle[1], bundle[2], bundle[3], bundle[4], bundle[5])
+def init(bot):
+    pl = LoggingModule(bot)
     pl.init()
     return pl

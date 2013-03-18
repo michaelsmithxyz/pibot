@@ -6,10 +6,9 @@ import os
 import os.path
 
 class PluginManager:
-    def __init__(self, bundle=()):
+    def __init__(self, bundle=None):
         self.handlers = {}
-        self.plugins = []
-        bundle = bundle + (self,)
+        self.plugins = {}
         self.bundle = bundle
 
     def load(self, path):
@@ -22,16 +21,21 @@ class PluginManager:
             mod_name = name.split('.mod.py')[0]
             full_name = mod_name + '.mod'
             mod_info = imp.find_module(full_name, [path])
-            l.info("Loading plugin", full_name)
             self.load_plugin(full_name, mod_info)
 
     def load_plugin(self, name, info):
         mod = imp.load_module(name, *info)
         try:
-            self.plugins.append(mod.init(self.bundle))
+            modname = mod.NAME
+            if modname in self.plugins:
+                l.warn("Module", modname, "already loaded. Ignoring duplicate")
+            else:
+                l.info("Loading Module:", modname)
+                plugin = mod.init(self.bundle)
+                self.plugins[modname] = plugin
         except Exception as e:
-            l.err(str(e))
-            l.warn("Error loading module", name)
+            l.err("Error loading module", name)
+            l.err('\t', str(e))
 
     def handle_event(self, event, args):
         for handle in self.handlers:

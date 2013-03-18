@@ -1,23 +1,25 @@
 #!/usr/bin/env python
 
-class PongPlugin:
-    def __init__(self, bot, irc, l, events, mgr):
-        self.irc = irc
-        self.mgr = mgr
+import events
+import irc
+import logging as l
+
+NAME = 'mod_pong'
+
+class PongModule:
+    def __init__(self, bot):
         self.bot = bot
-        self.events = events
-        self.l = l
+        self.mgr = bot.get_plugin_manager()
     
     def init(self):
-        self.mgr.add_handler(self.events.READ_MESSAGE, self.pong)
+        self.mgr.add_handler(events.READ_MESSAGE, self.pong)
 
     def pong(self, event, args):
-        msg = self.irc.parse_message(args[0])
+        msg = irc.parse_message(args[0])
         if msg[0] == 'PING':
-            self.l.info("Pong", msg[1])
             self.bot.send_message(self.irc.pong(msg[1]))
 
-def init(bundle):
-    pl = PongPlugin(bundle[0], bundle[1], bundle[2], bundle[3], bundle[5])
+def init(bot):
+    pl = PongModule(bot)
     pl.init()
     return pl
