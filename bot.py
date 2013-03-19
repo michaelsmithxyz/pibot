@@ -53,6 +53,7 @@ class Bot:
                 self.conf.get_value("bot.realname")))
         self.poller.remove_write(self.sock)
         self.poller.add_write(self.sock, self.write_socket)
+        self.plugin_manager.handle_event(events.POST_CONNECT, [])
 
     def write_socket(self, poller, sock):
         if len(self.mqueue) > 0:
@@ -60,22 +61,31 @@ class Bot:
             sock.send(bytes(msg, 'UTF-8'))
             self.plugin_manager.handle_event(events.WRITE_MESSAGE, [msg])
 
+    def disconnect(self, poller, sock):
+        self.terminate()
+    
+    def dump_queue(self):
+        l.info("Dumping message queue")
+        while len(self.mqueue) > 0:
+            msg = self.mqueue.pop(0)
+            self.sock.send(bytes(msg, 'UTF-8'))
+
     def quit(self):
+        self.plugin_manager.handle_event(events.EXIT, [])
         self.send_message(irc.quit())
-        self.plugin_manager.handle_event(events.QUIT, [])
     
     def _quit(self):
         try:
             self.sock.send(bytes(irc.quit(), 'UTF-8'))
         except:
             pass
-        self.disconnect(self.poller, self.sock)
+        self.terminate()
 
-    def disconnect(self, poller, sock):
-        l.info("Disconnecting")
-        self.poller.remove_all(sock)
-        sock.close()
-        self.plugin_manager.handle_event(events.DISCONNECT, [])
+    def terminate(self):
+        l.info("Terminating bot")
+        self.plugin_manager.unload_all()
+        self.poller.remove_all(self.sock)
+        self.sock.close()
         sys.exit(0)
 
     def send_message(self, message):
@@ -94,6 +104,7 @@ class Bot:
                 l.err("\t", r)
             sys.exit(1)
         self.plugin_manager.load("modules/")
+        self.plugin_manager.initialize()
         self.sock.connect((self.conf.get_value("bot.server"),
             int(self.conf.get_value("bot.port"))))
         self.poller.add_read(self.sock, self.read_socket)
@@ -102,8 +113,10 @@ class Bot:
         try:
             self.poller.mainloop()
         except KeyboardInterrupt:
-            self._quit()
+            self.quit()
+            self.dump_queue()
+            self.terminate()
         except Exception as e:
             import traceback
             traceback.print_exc()
-            self.disconnect(self.poller, self.sock)
+            self.terminate()

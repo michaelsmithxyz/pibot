@@ -26,3 +26,13 @@ def pong(msg):
 
 def quit():
     return "QUIT\r\n"
+
+def join(channel, key=None):
+    if key is not None:
+        return "JOIN %s %s\r\n" %(channel, key)
+    return "JOIN %s\r\n" %(channel)
+
+def part(channel, msg=None):
+    if msg is not None:
+        return "PART %s :%s\r\n" %(channel, msg)
+    return "PART %s\r\n" %(channel)

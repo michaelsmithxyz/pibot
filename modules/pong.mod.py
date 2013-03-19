@@ -21,5 +21,4 @@ class PongModule:
 
 def init(bot):
     pl = PongModule(bot)
-    pl.init()
     return pl

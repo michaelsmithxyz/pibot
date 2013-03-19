@@ -55,8 +55,8 @@ class Poller:
                 )
             for r in rds:
                 self.read_mapping[r](self, r)
-            for w in wrts:
-                self.write_mapping[w](self, w)
-            for e in xcpts:
-                self.except_mapping[e](self, e)
+                for w in wrts:
+                    self.write_mapping[w](self, w)
+                for e in xcpts:
+                    self.except_mapping[e](self, e)
             time.sleep(wait)

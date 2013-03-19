@@ -24,5 +24,4 @@ class LoggingModule:
 
 def init(bot):
     pl = LoggingModule(bot)
-    pl.init()
     return pl

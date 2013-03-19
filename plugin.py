@@ -39,7 +39,18 @@ class PluginManager:
 
     def initialize(self):
         for plug in self.plugins:
+            l.info("Initalizing Module:", plug)
             self.plugins[plug].init()
+
+    def unload_plugin(self, name):
+        if name in self.plugins:
+            plug = self.plugins[name]
+            if hasattr(plug, "unload"):
+                plug.unload()
+
+    def unload_all(self):
+        for plug in self.plugins:
+            self.unload_plugin(plug)
 
     def get_plugin(self, name):
         if name in self.plugins:
