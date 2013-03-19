@@ -37,6 +37,15 @@ class PluginManager:
             l.err("Error loading module", name)
             l.err('\t', str(e))
 
+    def initialize(self):
+        for plug in self.plugins:
+            self.plugins[plug].init()
+
+    def get_plugin(self, name):
+        if name in self.plugins:
+            return self.plugins[name]
+        return None
+
     def handle_event(self, event, args):
         for handle in self.handlers:
             if event in self.handlers[handle]:
