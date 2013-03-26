@@ -1,17 +1,17 @@
-PiBot IRC Bot
+πbot IRC Bot
 =============
 
-PiBot is an IRC bot, written in Python. It features an extensible plugin
+πBot is an IRC bot, written in Python. It features an extensible plugin
 interface, which allows the minimal core to be extended. Included are
 internal plugins that provide basic functionality to the bot, upon which
 developers can build their own extensions.
 
-PiBot is a work in progress, and still lacks core functionality and polish!
+πBot is a work in progress, and still lacks core functionality and polish!
 
 Licensing
 ---------
 
-PiBot is licensed under the MIT License:
+πBot is licensed under the MIT License:
 ```
 The MIT License
 
