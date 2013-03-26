@@ -17,7 +17,7 @@ class PongModule:
     def pong(self, event, args):
         msg = irc.parse_message(args[0])
         if msg[0] == 'PING':
-            self.bot.send_message(self.irc.pong(msg[1]))
+            self.bot.send_message(irc.pong(msg[1]))
 
 def init(bot):
     pl = PongModule(bot)
