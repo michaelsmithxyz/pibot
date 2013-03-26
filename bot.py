@@ -104,7 +104,11 @@ class Bot:
                 l.err("\t", r)
             sys.exit(1)
         self.plugin_manager.load("modules/")
+        pldir = self.conf.get_value("bot.plugindir")
+        if pldir is not None:
+            self.plugin_manager.load(pldir)
         self.plugin_manager.initialize()
+        l.info("Connecting...")
         self.sock.connect((self.conf.get_value("bot.server"),
             int(self.conf.get_value("bot.port"))))
         self.poller.add_read(self.sock, self.read_socket)

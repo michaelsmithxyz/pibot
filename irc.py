@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 
 def parse_message(message):
-    parts = message.split(' ')
-    final = None
-    for i in range(1, len(parts)):
-        if parts[i][0] == ':':
-            final = i
+    prefix = ''
+    split = message.split(' ')
+    args = []
+    if split[0][0] == ':':
+        prefix = split[0]
+    command = split[1]
+    for x in split[2:]:
+        if x[0] == ':':
+            args.append(x[1:])
             break
-    if final is not None:
-        parts[final] = parts[final][1:]
-        return parts[:final] + [' '.join(parts[final:])]
-    return parts
+        args.append(x)
+    return [prefix, command, args]
 
 def privmsg(rcpt, msg):
     return "PRIVMSG %s :%s\r\n" %(rcpt, msg)

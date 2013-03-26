@@ -13,6 +13,7 @@ class PluginManager:
 
     def load(self, path):
         path = os.path.abspath(path)
+        l.info("Loading modules from", path)
         files = os.listdir(path)
         for fle in files:
             name = os.path.basename(fle)
