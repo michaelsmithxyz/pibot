@@ -13,6 +13,9 @@ class PluginManager:
 
     def load(self, path):
         path = os.path.abspath(path)
+        if not os.path.exists(path):
+            l.warn("Skipping modules from", path)
+            return
         l.info("Loading modules from", path)
         files = os.listdir(path)
         for fle in files:

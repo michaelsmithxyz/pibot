@@ -12,12 +12,10 @@ class PongModule:
         self.mgr = bot.get_plugin_manager()
     
     def init(self):
-        self.mgr.add_handler(events.READ_MESSAGE, self.pong)
+        self.mgr.add_handler("IRC_PING", self.pong)
 
     def pong(self, event, args):
-        msg = irc.parse_message(args[0])
-        if msg[0] == 'PING':
-            self.bot.send_message(irc.pong(msg[1]))
+        self.bot.send_message(irc.pong(args[2][0]))
 
 def init(bot):
     pl = PongModule(bot)

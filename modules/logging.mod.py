@@ -14,7 +14,6 @@ class LoggingModule:
     
     def init(self):
         if self.conf.get_value("bot.logconsole").lower() == 'true':
-            l.info("Logging enabled")
             self.mgr.add_handler(events.READ_MESSAGE, self.log)
             self.mgr.add_handler(events.WRITE_MESSAGE, self.log)
 

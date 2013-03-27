@@ -6,13 +6,31 @@ def parse_message(message):
     args = []
     if split[0][0] == ':':
         prefix = split[0]
-    command = split[1]
-    for x in split[2:]:
+        split = split[1:]
+    command = split[0]
+    split = split[1:]
+    for x in split:
         if x[0] == ':':
-            args.append(x[1:])
+            index = split.index(x)
+            arg = ' '.join(split[index:])
+            args.append(arg[1:])
             break
         args.append(x)
     return [prefix, command, args]
+
+def parse_names(args):
+    args = args[2]
+    channel = args[2]
+    return (channel, args[3].split(' '))
+
+def parse_nick(name):
+    parts = name.split('!')
+    return (parts[0][1:], parts[1])
+
+def raw_nick(name):
+    if name[0] in ('@', '&', '~', '+', '%'):
+        return name[1:]
+    return name
 
 def privmsg(rcpt, msg):
     return "PRIVMSG %s :%s\r\n" %(rcpt, msg)
