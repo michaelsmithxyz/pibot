@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>πBot Documentation</title>
+    <link rel="stylesheet" href="static/default.css" />
+</head>
+<body>
+<div id="container">
+<h1 id="plugin-development">Plugin Development</h1>
+<p>piBot is fully extensible with an event based plugin system. In fact, many core piBot functionality is implemented using the same priciples (internal plugins are called modules).</p>
+<p>piBot plugins are written in Python, and access to the bot is provided with a simple API. Most of the work involved in writing a plugin will be in dealing with the event system.</p>
+<h2 id="getting-started">Getting Started</h2>
+<p>The most basic piBot plugin looks like this:</p>
+<pre><code>NAME = &quot;testplugin&quot;
+
+class Plugin:
+    def __init__(self, bot):
+        self.bot = bot
+
+    def init(self):
+        pass
+
+def init(bot):
+    pl = Plugin(bot)
+    return pl</code></pre>
+<p>The plugin system loads your module, and calls the <code>init</code> function, which it expects to return the plugin (in this case an instance of <code>Plugin</code>). All plugin files must have the extension <code>.mod.py</code>. They will not be loaded otherwise. Likewise, the <code>NAME</code> attribute is required in all plugin modules.</p>
+<p>After all other plugins are loaded, the <code>init</code> function of the plugin will be called. This is where events would be registered, among other things.</p>
+<p>Saving this plugin and starting piBot should result in a message being logged indicating that the plugin <code>testplugin</code> has been loaded.</p>
+</div>
+</body>
+</html>
