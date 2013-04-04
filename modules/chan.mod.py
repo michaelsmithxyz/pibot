@@ -35,7 +35,7 @@ class ChannelsModule:
         if names[0] in self.channels:
             self.channels[names[0]] = [irc.raw_nick(x) for x in names[1]]
 
-    def join_handler(self, events, args):
+    def join_handler(self, event, args):
         nick = irc.raw_nick(irc.parse_nick(args[0]))
         chan = args[2][0]
         if chan in self.channels:
@@ -43,7 +43,7 @@ class ChannelsModule:
                 self.channels[chan].append(nick)
         self.mgr.handle_event(events.JOIN, [nick, chan])
 
-    def part_handler(self, events, args):
+    def part_handler(self, event, args):
         nick = irc.raw_nick(irc.parse_nick(args[0])[0])
         chan = args[2][0]
         if chan in self.channels:
