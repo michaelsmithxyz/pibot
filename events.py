@@ -12,3 +12,4 @@ EXIT = 'exitEvent'
 # These are public facing events, used by plugins
 JOIN = 'joinEvent'
 PART = 'partEvent'
+PRIVMSG = 'privmsgEvent'

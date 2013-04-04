@@ -3,6 +3,7 @@
 import socket
 import sys
 
+import commands
 import config
 import events
 import irc
@@ -21,9 +22,13 @@ class Bot:
         self.conf.read(self.conffile)
         self.poller = poll.Poller()
         self.plugin_manager = plugin.PluginManager(self)
+        self.command_manager = commands.CommandManager(self)
 
     def get_plugin_manager(self):
         return self.plugin_manager
+
+    def get_command_manager(self):
+        return self.command_manager
 
     def get_config(self):
         return self.conf
