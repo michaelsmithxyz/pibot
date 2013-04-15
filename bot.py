@@ -24,6 +24,12 @@ class Bot:
         self.plugin_manager = plugin.PluginManager(self)
         self.command_manager = commands.CommandManager(self)
 
+    def get_nick(self):
+        return self.nick
+
+    def get_connection(self):
+        return self.connection
+
     def get_plugin_manager(self):
         return self.plugin_manager
 
@@ -112,10 +118,12 @@ class Bot:
         pldir = self.conf.get_value("bot.plugindir")
         if pldir is not None:
             self.plugin_manager.load(pldir)
+        self.nick = self.conf.get_value("bot.nick")
+        self.connection = (self.conf.get_value("bot.server"),
+                int(self.conf.get_value("bot.port")))
         self.plugin_manager.initialize()
         l.info("Connecting...")
-        self.sock.connect((self.conf.get_value("bot.server"),
-            int(self.conf.get_value("bot.port"))))
+        self.sock.connect(self.connection)
         self.poller.add_read(self.sock, self.read_socket)
         self.poller.add_write(self.sock, self.first_write)
         self.poller.add_except(self.sock, self.disconnect)
