@@ -94,7 +94,7 @@ class Bot:
 
     def terminate(self):
         l.info("Terminating bot")
-        self.plugin_manager.unload_all()
+        self.plugin_manager.disable_all()
         self.poller.remove_all(self.sock)
         self.sock.close()
         sys.exit(0)
@@ -121,7 +121,7 @@ class Bot:
         self.nick = self.conf.get_value("bot.nick")
         self.connection = (self.conf.get_value("bot.server"),
                 int(self.conf.get_value("bot.port")))
-        self.plugin_manager.initialize()
+        self.plugin_manager.enable_all()
         l.info("Connecting...")
         self.sock.connect(self.connection)
         self.poller.add_read(self.sock, self.read_socket)

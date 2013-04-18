@@ -1,16 +1,71 @@
 #!/usr/bin/env python3
 
+import abc
 import imp
+import inspect
 import logging as l
 import os
 import os.path
 
-class PluginManager:
-    def __init__(self, bundle=None):
-        self.handlers = {}
-        self.plugins = {}
-        self.bundle = bundle
+class PluginError(Exception):
+    pass
 
+class PluginManager:
+    PLUGINS = []
+    HOOKS = {}
+    def __init__(self, bot):
+        self.bot = bot
+
+    @classmethod
+    def hook_event(cls, event):
+        def _decor(function):
+            cls.add_handler(cls, event, function)
+            def wrapper(*args, **kwargs):
+                function(*args, **kwargs)
+            return wrapper
+        return _decor
+
+    def add_handler(self, event, handler):
+        if handler in self.HOOKS:
+            self.HOOKS[event].append(handler)
+        else:
+            self.HOOKS[event] = [handler]
+    
+    def remove_handler(self, event, handler):
+        if event in self.HOOKS:
+            if handler in self.HOOKS[event]:
+                self.hooks[event].remove(handler)
+
+    def handle_event(self, event, args):
+        if event in self.HOOKS:
+            for handler in self.HOOKS[event]:
+                handler(event, args)
+
+    def enable_all(self):
+        for plugin in self.PLUGINS:
+            self.enable(plugin)
+
+    def disable_all(self):
+        for plugin in self.PLUGINS:
+            self.disable(plugin)
+
+    def enable(self, plugin):
+        plugin.enable()
+
+    def disable(self, plugin):
+        plugin.disable()
+
+    def reload(self, plugin):
+        if plugin in self.PLUGINS:
+            plugin.disable()
+            plugin.enable()
+
+    def get_plugin(self, name):
+        for plugin in self.PLUGINS:
+            if plugin.name.lower() == name.lower():
+                return plugin
+        return None
+    
     def load(self, path):
         path = os.path.abspath(path)
         if not os.path.exists(path):
@@ -25,57 +80,35 @@ class PluginManager:
             mod_name = name.split('.mod.py')[0]
             full_name = mod_name + '.mod'
             mod_info = imp.find_module(full_name, [path])
-            self.load_plugin(full_name, mod_info)
+            self._load_module(full_name, mod_info)
 
-    def load_plugin(self, name, info):
-        mod = imp.load_module(name, *info)
+    def _load_module(self, name, info):
         try:
-            modname = mod.NAME
-            if modname in self.plugins:
-                l.warn("Module", modname, "already loaded. Ignoring duplicate")
-            else:
-                l.info("Loading Module:", modname)
-                plugin = mod.init(self.bundle)
-                self.plugins[modname] = plugin
+            mod = imp.load_module(name, *info)
+            plugins = self._find_plugins(mod, PiPlugin)
+            for plugin in plugins:
+                instance = plugin(self.bot, self)
+                if not hasattr(instance, "name"):
+                    raise PluginError("Plugin %s does not have a defined name" % instance)
+                self.PLUGINS.append(instance)
+                l.info("Loaded module", instance.name)
         except Exception as e:
-            l.err("Error loading module", name)
-            l.err('\t', str(e))
+            l.warn("Error loading module", name)
+            l.warn("\t", str(e))
 
-    def initialize(self):
-        for plug in self.plugins:
-            l.info("Initalizing Module:", plug)
-            self.plugins[plug].init()
+    def _find_plugins(self, module, base):
+        return [cls for name, cls in inspect.getmembers(module) if 
+                inspect.isclass(cls) and issubclass(cls, base) 
+                and cls is not base]
 
-    def unload_plugin(self, name):
-        if name in self.plugins:
-            plug = self.plugins[name]
-            if hasattr(plug, "unload"):
-                plug.unload()
+class PiPlugin:
+    def __init__(self, bot, manager):
+        self.manager = manager
+        self.commands = bot.get_command_manager()
+        self.bot = bot
 
-    def unload_all(self):
-        for plug in self.plugins:
-            self.unload_plugin(plug)
+    def enable(self):
+        pass
 
-    def get_plugin(self, name):
-        if name in self.plugins:
-            return self.plugins[name]
-        return None
-
-    def handle_event(self, event, args):
-        for handle in self.handlers:
-            if event in self.handlers[handle]:
-                handle(event, args)
-
-    def add_handler(self, event, handler):
-        if handler in self.handlers:
-            self.handlers[handler].append(event)
-        else:
-            self.handlers[handler] = [event]
-    
-    def remove_handler(self, event, handler):
-        if handler in self.handlers:
-            self.handlers[handler].remove(event)
-
-    def remove_all(self, event, handler):
-        if handler in self.handlers:
-            del self.handlers[handler]
+    def disable(self):
+        pass

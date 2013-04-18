@@ -3,24 +3,20 @@
 import events
 import irc
 import logging as l
+from plugin import PiPlugin, PluginManager
 
-NAME = 'mod_logging'
-
-class LoggingModule:
-    def __init__(self, bot):
-        self.bot = bot
-        self.mgr = self.bot.get_plugin_manager()
-        self.conf = self.bot.get_config()
+class LoggingModule(PiPlugin):
+    def __init__(self, bot, manager):
+        super().__init__(bot, manager)
+        self.conf = bot.get_config()
+        self.name = "logging"
     
-    def init(self):
-        if self.conf.get_value("bot.logconsole").lower() == 'true':
-            self.mgr.add_handler(events.READ_MESSAGE, self.log)
-            self.mgr.add_handler(events.WRITE_MESSAGE, self.log)
+    #def enable(self):
+    #    if self.conf.get_value("bot.logconsole").lower() == 'true':
+    #        self.manager.add_handler(events.READ_MESSAGE, self.log)
+    #        self.manager.add_handler(events.WRITE_MESSAGE, self.log)
 
+    @PluginManager.hook_event(events.READ_MESSAGE)
     def log(self, event, args):
         msg = args[0]
         l.info(msg.rstrip())
-
-def init(bot):
-    pl = LoggingModule(bot)
-    return pl
