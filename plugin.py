@@ -14,7 +14,7 @@ class PluginError(Exception):
 class PluginManager:
     def __init__(self, bundle=None):
         self.handlers = {}
-        self.plugins = {}
+        self.plugins = []
         self.bundle = bundle
 
     def load(self, path):
@@ -42,26 +42,24 @@ class PluginManager:
                 if not hasattr(instance, 'name'):
                     raise PluginError("Plugin %s does not have a name" %(instance))
                 self.plugins.append(instance)
+                self._prepare_plugin(instance)
                 l.info("Loaded plugin", instance.name)
         except Exception as e:
             l.err("Error loading module", name)
             l.err('\t', str(e))
+
+    def _prepare_plugin(self, plugin):
+        methods = inspect.getmembers(plugin, inspect.ismethod)
+        for method in methods:
+            if hasattr(method, 'events'):
+                for event in method.events:
+                    self.add_handler(event, method)
 
     def _find_plugins(self, module, base):
         return [cls for name, cls in inspect.getmembers(module) if
             inspect.isclass(cls) and issubclass(cls, base)
             and cls is not base]
 
-    def initialize(self):
-        for plug in self.plugins:
-            l.info("Initalizing Module:", plug)
-            self.plugins[plug].init()
-
-    def unload_plugin(self, name):
-        if name in self.plugins:
-            plug = self.plugins[name]
-            if hasattr(plug, "unload"):
-                plug.unload()
 
     def unload_all(self):
         for plug in self.plugins:
@@ -93,3 +91,12 @@ class PiPlugin:
         self.bot = bot
         self.manager = manager
         self.commands = bot.get_command_manager()
+        
+
+def hook_events(events):
+    if type(events) == str:
+        events = [events]
+    def _decor(function):
+        function.events = events
+        def wrapper(*args, **kwargs):
+            return function(*args, **kwargs)
