@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 
 import imp
+import inspect
 import logging as l
 import os
 import os.path
+
+
+class PluginError(Exception):
+    pass
+
 
 class PluginManager:
     def __init__(self, bundle=None):
@@ -25,21 +31,26 @@ class PluginManager:
             mod_name = name.split('.mod.py')[0]
             full_name = mod_name + '.mod'
             mod_info = imp.find_module(full_name, [path])
-            self.load_plugin(full_name, mod_info)
+            self._load_plugin(full_name, mod_info)
 
-    def load_plugin(self, name, info):
+    def _load_plugin(self, name, info):
         mod = imp.load_module(name, *info)
+        plugins = self._find_plugins(mod, PiPlugin)
         try:
-            modname = mod.NAME
-            if modname in self.plugins:
-                l.warn("Module", modname, "already loaded. Ignoring duplicate")
-            else:
-                l.info("Loading Module:", modname)
-                plugin = mod.init(self.bundle)
-                self.plugins[modname] = plugin
+            for plugin in plugins:
+                instance = plugin(self.bot, self)
+                if not hasattr(instance, 'name'):
+                    raise PluginError("Plugin %s does not have a name" %(instance))
+                self.plugins.append(instance)
+                l.info("Loaded plugin", instance.name)
         except Exception as e:
             l.err("Error loading module", name)
             l.err('\t', str(e))
+
+    def _find_plugins(self, module, base):
+        return [cls for name, cls in inspect.getmembers(module) if
+            inspect.isclass(cls) and issubclass(cls, base)
+            and cls is not base]
 
     def initialize(self):
         for plug in self.plugins:
@@ -76,6 +87,9 @@ class PluginManager:
         if handler in self.handlers:
             self.handlers[handler].remove(event)
 
-    def remove_all(self, event, handler):
-        if handler in self.handlers:
-            del self.handlers[handler]
+
+class PiPlugin:
+    def __init__(self, bot, manager):
+        self.bot = bot
+        self.manager = manager
+        self.commands = bot.get_command_manager()
