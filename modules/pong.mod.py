@@ -3,20 +3,13 @@
 import events
 import irc
 import logging as l
+import plugin
 
-NAME = 'mod_pong'
+class PongModule(plugin.PiPlugin):
+    def __init__(self, bot, manager):
+        self.name = "mod_pong"
+        super().__init__(bot, manager)
 
-class PongModule:
-    def __init__(self, bot):
-        self.bot = bot
-        self.mgr = bot.get_plugin_manager()
-    
-    def init(self):
-        self.mgr.add_handler("IRC_PING", self.pong)
-
+    @plugin.hooks("IRC_PING")
     def pong(self, event, args):
         self.bot.send_message(irc.pong(args[2][0]))
-
-def init(bot):
-    pl = PongModule(bot)
-    return pl

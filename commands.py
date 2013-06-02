@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import events
 import logging as l
 
 class CommandManager:
@@ -41,4 +42,4 @@ class CommandManager:
 
     def unregister(self, command):
         if command in self.handlers:
-            def self.handlers[command]
+            del self.handlers[command]

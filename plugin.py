@@ -12,10 +12,10 @@ class PluginError(Exception):
 
 
 class PluginManager:
-    def __init__(self, bundle=None):
+    def __init__(self, bot):
         self.handlers = {}
         self.plugins = []
-        self.bundle = bundle
+        self.bot = bot
 
     def load(self, path):
         path = os.path.abspath(path)
@@ -49,10 +49,11 @@ class PluginManager:
             l.err('\t', str(e))
 
     def _prepare_plugin(self, plugin):
-        methods = inspect.getmembers(plugin, inspect.ismethod)
+        methods = [x[1] for x in inspect.getmembers(plugin, inspect.ismethod)]
         for method in methods:
             if hasattr(method, 'events'):
                 for event in method.events:
+                    l.info("Hooking event:", event, "in plugin", plugin.name)
                     self.add_handler(event, method)
 
     def _find_plugins(self, module, base):
@@ -60,26 +61,30 @@ class PluginManager:
             inspect.isclass(cls) and issubclass(cls, base)
             and cls is not base]
 
-
     def unload_all(self):
         for plug in self.plugins:
             self.unload_plugin(plug)
 
+    def unload_plugin(self, plugin):
+        plugin.unload()
+        self.plugins.remove(plugin)
+
     def get_plugin(self, name):
-        if name in self.plugins:
-            return self.plugins[name]
+        for plugin in self.plugins:
+            if plugin.name == name:
+                return plugin
         return None
 
     def handle_event(self, event, args):
-        for handle in self.handlers:
-            if event in self.handlers[handle]:
+        if event in self.handlers:
+            for handle in self.handlers[event]:
                 handle(event, args)
 
     def add_handler(self, event, handler):
-        if handler in self.handlers:
-            self.handlers[handler].append(event)
+        if event in self.handlers:
+            self.handlers[event].append(handler)
         else:
-            self.handlers[handler] = [event]
+            self.handlers[event] = [handler]
     
     def remove_handler(self, event, handler):
         if handler in self.handlers:
@@ -92,11 +97,13 @@ class PiPlugin:
         self.manager = manager
         self.commands = bot.get_command_manager()
         
+    def unload(self):
+        pass
 
-def hook_events(events):
+def hooks(events):
     if type(events) == str:
         events = [events]
     def _decor(function):
         function.events = events
-        def wrapper(*args, **kwargs):
-            return function(*args, **kwargs)
+        return function
+    return _decor

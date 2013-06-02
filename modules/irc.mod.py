@@ -3,30 +3,23 @@
 import events
 import irc
 import logging as l
+import plugin
 
-NAME = 'mod_irc'
+class IRCModule(plugin.PiPlugin):
+    def __init__(self, bot, manager):
+        self.name = "mod_irc"
+        super().__init__(bot, manager)
 
-class IRCModule:
-    def __init__(self, bot):
-        self.bot = bot
-        self.mgr = self.bot.get_plugin_manager()
-
-    def init(self):
-        self.mgr.add_handler(events.READ_MESSAGE, self.dispatch)
-        self.mgr.add_handler("IRC_PRIVMSG", self.d_privmsg)
-
+    @plugin.hooks(events.READ_MESSAGE)
     def dispatch(self, event, args):
         msg = args[0].rstrip()
         parts = irc.parse_message(msg)
         evt = "IRC_%s" % parts[1]
-        self.mgr.handle_event(evt, parts)
+        self.manager.handle_event(evt, parts)
 
+    @plugin.hooks("IRC_PRIVMSG")
     def d_privmsg(self, event, args):
         source = irc.parse_nick(args[0])[0]
         target = args[2][0]
         msg = args[2][1]
-        self.mgr.handle_event(events.PRIVMSG, [source, target, msg])
-
-def init(bot):
-    ir = IRCModule(bot)
-    return ir
+        self.manager.handle_event(events.PRIVMSG, [source, target, msg])

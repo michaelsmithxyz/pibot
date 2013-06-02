@@ -121,7 +121,6 @@ class Bot:
         self.nick = self.conf.get_value("bot.nick")
         self.connection = (self.conf.get_value("bot.server"),
                 int(self.conf.get_value("bot.port")))
-        self.plugin_manager.initialize()
         l.info("Connecting...")
         self.sock.connect(self.connection)
         self.poller.add_read(self.sock, self.read_socket)
