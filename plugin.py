@@ -4,14 +4,12 @@ import imp
 import inspect
 import logging as l
 import os
-import os.path
-
 
 class PluginError(Exception):
     pass
 
 
-class PluginManager:
+class PluginManager(object):
     def __init__(self, bot):
         self.handlers = {}
         self.plugins = []
@@ -91,7 +89,7 @@ class PluginManager:
             self.handlers[handler].remove(event)
 
 
-class PiPlugin:
+class PiPlugin(object):
     def __init__(self, bot, manager):
         self.bot = bot
         self.manager = manager

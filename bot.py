@@ -11,7 +11,7 @@ import logging as l
 import plugin
 import poll
 
-class Bot:
+class Bot(object):
     def __init__(self, conf, args):
         self.rbuffer = ""
         self.args = args

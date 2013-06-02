@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import events
-import irc
 import logging as l
 import plugin
 

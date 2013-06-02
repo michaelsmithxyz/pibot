@@ -2,7 +2,7 @@
 
 import logging as l
 
-class Config:
+class Config(object):
     def __init__(self, bot):
         self.registry = {}
         self.bot = bot

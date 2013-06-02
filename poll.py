@@ -3,7 +3,7 @@
 import select
 import time
 
-class Poller:
+class Poller(object):
     def __init__(self):
         self.write_mapping = {}
         self.read_mapping = {}
