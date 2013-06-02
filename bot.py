@@ -7,7 +7,7 @@ import commands
 import config
 import events
 import irc
-import logging as l
+import logging
 import plugin
 import poll
 
@@ -18,6 +18,7 @@ class Bot(object):
         self.mqueue = []
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.conffile = conf
+        self.logger = logging.getLogger()
         self.conf = config.Config(self)
         self.conf.read(self.conffile)
         self.poller = poll.Poller()
@@ -58,7 +59,7 @@ class Bot(object):
                 self.plugin_manager.handle_event(events.READ_MESSAGE, [msg])
 
     def first_write(self, poller, sock):
-        l.info("Sending initial info")
+        self.logger.info("Sending initial info")
         self.send_message(irc.nick(self.conf.get_value("bot.nick")))
         self.send_message(irc.user(self.conf.get_value("bot.nick"),
                 self.conf.get_value("bot.realname")))
@@ -76,7 +77,7 @@ class Bot(object):
         self.terminate()
     
     def dump_queue(self):
-        l.info("Dumping message queue")
+        self.logger.info("Dumping message queue")
         while len(self.mqueue) > 0:
             msg = self.mqueue.pop(0)
             self.sock.send(bytes(msg, 'UTF-8'))
@@ -93,7 +94,7 @@ class Bot(object):
         self.terminate()
 
     def terminate(self):
-        l.info("Terminating bot")
+        self.logger.info("Terminating bot")
         self.plugin_manager.unload_all()
         self.poller.remove_all(self.sock)
         self.sock.close()
@@ -103,6 +104,7 @@ class Bot(object):
         self.mqueue.append(message)
 
     def main(self):
+        logging.basicConfig(format="[%(levelname)s] %(message)s", level=logging.DEBUG)
         req = self.conf.check([
             "bot.nick",
             "bot.realname",
@@ -110,7 +112,7 @@ class Bot(object):
             "bot.port"
             ])
         if len(req) > 1:
-            l.err("Cannot start bot. Missing required options:")
+            self.logger.error("Cannot start bot. Missing required options:")
             for r in req:
                 l.err("\t", r)
             sys.exit(1)
@@ -121,7 +123,7 @@ class Bot(object):
         self.nick = self.conf.get_value("bot.nick")
         self.connection = (self.conf.get_value("bot.server"),
                 int(self.conf.get_value("bot.port")))
-        l.info("Connecting...")
+        self.logger.info("Connecting...")
         self.sock.connect(self.connection)
         self.poller.add_read(self.sock, self.read_socket)
         self.poller.add_write(self.sock, self.first_write)

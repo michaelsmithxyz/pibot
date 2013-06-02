@@ -11,13 +11,13 @@ def usage():
 def main(argv):
     conf = 'bot.conf'
     try:
-        opts, args = getopt.getopt(argv, 'c:')
-    except:
+        opts = getopt.getopt(argv, 'c:')[0]
+    except Exception:
         usage()
         return 1
-    for o, a in opts:
-        if o == '-c':
-            conf = a
+    for opt, arg in opts:
+        if opt == '-c':
+            conf = arg
     ircbot = bot.Bot(conf, opts)
     ircbot.main()
     return 0

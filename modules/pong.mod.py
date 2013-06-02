@@ -2,7 +2,6 @@
 
 import events
 import irc
-import logging as l
 import plugin
 
 class PongModule(plugin.PiPlugin):

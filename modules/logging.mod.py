@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import events
-import logging as l
 import plugin
 
 
@@ -15,4 +14,4 @@ class LoggingModule(plugin.PiPlugin):
     def log(self, event, args):
         if self.conf.get_value("bot.logconsole").lower() == 'true':
             msg = args[0]
-            l.info(msg.rstrip())
+            self.logger.info(msg.rstrip())

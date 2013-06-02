@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
 import events
-import logging as l
+import logging
 
 class CommandManager(object):
     def __init__(self, bot):
         self.bot = bot
         self.config = bot.get_config()
         self.mgr = self.bot.get_plugin_manager()
+        self.logger = logging.getLogger()
         self.handlers = {}
         p = self.config.get_value("commands.prefix")
         if p is not None:
@@ -33,9 +34,8 @@ class CommandManager(object):
         self.handle_command(command, cargs, source, replyto)
 
     def handle_command(self, command, args, source, replyto):
-        l.info("Handling command:", command)
         if command in self.handlers:
-            l.info("Handling command:", command)
+            self.logger.debug("Handling command:", command)
             self.handlers[command](command, cargs, source, replyto)
 
     def register(self, command, handler):

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-import logging as l
+import logging
 
 class Config(object):
     def __init__(self, bot):
         self.registry = {}
         self.bot = bot
+        self.logger = logging.getLogger()
 
     def set_value(self, key, value):
         self.registry[key] = value
@@ -21,7 +22,7 @@ class Config(object):
 
     def read(self, path):
         try:
-            l.info("Reading configuration", path)
+            self.logger.info("Reading configuration %s", path)
             conf = open(path, 'r')
             for line in conf:
                 line = line.strip()
@@ -32,20 +33,20 @@ class Config(object):
                     self.registry[parts[0].strip()] = parts[1].strip()
             conf.close()
         except Exception as e:
-            l.err("Error reading configuration")
+            self.logger.error("Error reading configuration")
             l.err("\t", str(e))
             self.bot._quit()
 
     def write(self, path):
         try:
-            l.info("Writing configuration", path)
+            self.logger.info("Writing configuration", path)
             conf = open(path, 'w')
             for key, value in self.registry.items():
                 conf.write("%s = %s\n" %(key, value))
             conf.close()
         except Exception as e:
-            l.err("Error writing configuration")
-            l.err("\t", str(e))
+            self.logger.error("Error writing configuration")
+            self.logger.error("\t", str(e))
         
     def check(self, required):
         ret = []

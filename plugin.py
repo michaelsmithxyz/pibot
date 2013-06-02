@@ -2,7 +2,7 @@
 
 import imp
 import inspect
-import logging as l
+import logging
 import os
 
 class PluginError(Exception):
@@ -14,13 +14,14 @@ class PluginManager(object):
         self.handlers = {}
         self.plugins = []
         self.bot = bot
+        self.logger = logging.getLogger()
 
     def load(self, path):
         path = os.path.abspath(path)
         if not os.path.exists(path):
-            l.warn("Skipping modules from", path)
+            self.logger.warning("Skipping modules from %s", path)
             return
-        l.info("Loading modules from", path)
+        self.logger.info("Loading modules from %s", path)
         files = os.listdir(path)
         for fle in files:
             name = os.path.basename(fle)
@@ -41,17 +42,17 @@ class PluginManager(object):
                     raise PluginError("Plugin %s does not have a name" %(instance))
                 self.plugins.append(instance)
                 self._prepare_plugin(instance)
-                l.info("Loaded plugin", instance.name)
+                self.logger.info("Loaded plugin %s", instance.name)
         except Exception as e:
-            l.err("Error loading module", name)
-            l.err('\t', str(e))
+            self.logger.error("Error loading module %s", name)
+            self.logger.error('\t', str(e))
 
     def _prepare_plugin(self, plugin):
         methods = [x[1] for x in inspect.getmembers(plugin, inspect.ismethod)]
         for method in methods:
             if hasattr(method, 'events'):
                 for event in method.events:
-                    l.info("Hooking event:", event, "in plugin", plugin.name)
+                    self.logger.debug("Hooking event: %s in plugin %s", event, plugin.name)
                     self.add_handler(event, method)
 
     def _find_plugins(self, module, base):
@@ -94,6 +95,7 @@ class PiPlugin(object):
         self.bot = bot
         self.manager = manager
         self.commands = bot.get_command_manager()
+        self.logger = logging.getLogger()
         
     def unload(self):
         pass
